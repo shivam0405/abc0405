@@ -1,0 +1,29 @@
+{
+	"name": "WranglingDataFlow1",
+	"properties": {
+		"type": "WranglingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"name": "blob0405",
+					"script": "",
+					"dataset": {
+						"referenceName": "blob0405",
+						"type": "DatasetReference"
+					}
+				}
+			],
+			"sinks": [
+				{
+					"name": "Sink1",
+					"dataset": {
+						"referenceName": "DelimitedText1",
+						"type": "DatasetReference"
+					},
+					"script": "sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tpartitionFileNames:['abc.txt'],\n\ttruncate: true,\n\tpartitionBy('hash', 1),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> Sink1"
+				}
+			],
+			"script": "section Section1;\r\nshared blob0405 = let\r\n  AdfDoc = AzureStorage.BlobContents(\"https://saccnt0405.blob.core.windows.net/wra0405/Employee.txt\"),\r\n  Csv = Csv.Document(AdfDoc, [Delimiter = \",\", Encoding = TextEncoding.Utf8, QuoteStyle = QuoteStyle.Csv]),\r\n  PromotedHeaders = Table.PromoteHeaders(Csv, [PromoteAllScalars = true])\r\nin\r\n  PromotedHeaders;\r\nshared UserQuery = let\r\n  Source = blob0405,\r\n  #\"Sorted rows\" = Table.Sort(Source, {{\"name\", Order.Descending}})\r\nin\r\n  #\"Sorted rows\";\r\n"
+		}
+	}
+}
